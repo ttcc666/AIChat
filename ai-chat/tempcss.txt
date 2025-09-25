@@ -1,0 +1,15 @@
+.app-content {
+  min-height: 100vh;
+  padding: 32px;
+  background: var(--app-bg);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+@media (max-width: 992px) {
+  .app-content {
+    padding: 12px;
+    justify-content: center;
+  }
+}

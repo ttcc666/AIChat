@@ -7,6 +7,10 @@ import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    host: '0.0.0.0',
+    port: 8888,
+  },
   plugins: [
     vue(),
     AutoImport({
@@ -26,3 +30,4 @@ export default defineConfig({
     },
   },
 })
+

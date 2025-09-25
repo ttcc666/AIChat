@@ -71,4 +71,28 @@ describe('conversationStore', () => {
     expect(store.conversations).toHaveLength(1)
     expect(store.activeConversation?.id).toBe('c-1')
   })
+
+  it('normalizes messages when importing conversations', async () => {
+    const store = useConversationStore()
+    await store.load('gemini')
+
+    const payload: Conversation[] = [
+      {
+        id: 'c-2',
+        title: '含推理',
+        provider: 'gemini',
+        createdAt: Date.now() - 500,
+        updatedAt: Date.now() - 400,
+        messages: [
+          { role: 'assistant', content: 'internal reasoning', isThought: true },
+          { role: 'assistant', content: '最终回答' },
+        ],
+      },
+    ]
+
+    await store.importConversations(JSON.stringify(payload))
+    const messages = store.conversations[0].messages
+    expect(messages[0].isThought).toBe(true)
+    expect(messages[1].isThought).toBeUndefined()
+  })
 })

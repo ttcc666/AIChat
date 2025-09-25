@@ -14,6 +14,7 @@ const STORAGE_KEY = "ai-chat::provider-config"
 interface PersistedState {
   activeProvider: ProviderType
   providerConfigs: Record<ProviderType, ProviderConfig>
+  streamingEnabled?: boolean
 }
 
 function createDefaultOpenAIConfig(): OpenAIConfig {
@@ -40,6 +41,7 @@ export const useConfigStore = defineStore("config", () => {
     openai: createDefaultOpenAIConfig(),
     gemini: createDefaultGeminiConfig(),
   })
+  const streamingEnabled = ref(false)
   const initialized = ref(false)
 
   const currentConfig = computed(() => providerConfigs.value[activeProvider.value])
@@ -59,6 +61,7 @@ export const useConfigStore = defineStore("config", () => {
       if (raw) {
         const parsed = JSON.parse(raw) as PersistedState
         activeProvider.value = parsed.activeProvider
+        streamingEnabled.value = Boolean(parsed.streamingEnabled)
         providerConfigs.value = {
           openai: { ...createDefaultOpenAIConfig(), ...parsed.providerConfigs.openai },
           gemini: { ...createDefaultGeminiConfig(), ...parsed.providerConfigs.gemini },
@@ -87,6 +90,11 @@ export const useConfigStore = defineStore("config", () => {
     persist()
   }
 
+  function setStreamingEnabled(value: boolean) {
+    streamingEnabled.value = value
+    persist()
+  }
+
   function persist() {
     if (typeof window === "undefined") {
       return
@@ -95,6 +103,7 @@ export const useConfigStore = defineStore("config", () => {
     const payload: PersistedState = {
       activeProvider: activeProvider.value,
       providerConfigs: providerConfigs.value,
+      streamingEnabled: streamingEnabled.value,
     }
 
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
@@ -104,8 +113,10 @@ export const useConfigStore = defineStore("config", () => {
     activeProvider,
     providerConfigs,
     currentConfig,
+    streamingEnabled,
     initialize,
     setActiveProvider,
     updateProviderConfig,
+    setStreamingEnabled,
   }
 })

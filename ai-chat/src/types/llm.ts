@@ -5,6 +5,7 @@ export type ChatRole = "system" | "user" | "assistant"
 export interface ChatMessage {
   role: ChatRole
   content: string
+  isThought?: boolean
 }
 
 export interface ChatRequest {
@@ -16,6 +17,7 @@ export interface ChatRequest {
 export interface ChatResponse {
   content: string
   finishReason?: string
+  reasoning?: string[]
   raw?: unknown
 }
 

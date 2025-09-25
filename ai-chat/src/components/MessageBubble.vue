@@ -1,5 +1,5 @@
 <template>
-  <div :class="['message-item', message.role]">
+  <div :class="['message-item', message.role, { thought: isThought }]">
     <div class="message-role">{{ roleLabel }}</div>
     <div class="message-content">
       <div class="message-actions" v-if="canCopy">
@@ -24,7 +24,10 @@ import { renderMarkdown } from '@/utils/markdown'
 
 const props = defineProps<{ message: ChatMessage }>()
 
+const isThought = computed(() => props.message.isThought === true)
+
 const roleLabel = computed(() => {
+  if (isThought.value) return '助手思考'
   if (props.message.role === 'assistant') return '助手'
   if (props.message.role === 'user') return '我'
   return '系统'
@@ -57,14 +60,16 @@ async function copyContent() {
 
 <style scoped>
 .message-item {
-  max-width: min(70%, 720px);
-  padding: 14px 20px;
-  border-radius: var(--message-radius);
+  width: fit-content;
+  min-width: clamp(220px, 30vw, 340px);
+  max-width: clamp(360px, 52vw, 620px);
+  padding: 10px 16px;
+  border-radius: 18px;
   background: var(--message-neutral-bg);
   align-self: flex-start;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   white-space: pre-wrap;
   word-break: break-word;
   box-shadow: var(--message-shadow);
@@ -82,6 +87,12 @@ async function copyContent() {
   margin-right: auto;
 }
 
+.message-item.assistant.thought {
+  background: var(--message-neutral-bg);
+  border-style: dashed;
+  opacity: 0.92;
+}
+
 .message-item.user {
   align-self: flex-end;
   margin-left: auto;
@@ -96,8 +107,8 @@ async function copyContent() {
 .message-role {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 4px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--secondary-text);
@@ -116,6 +127,10 @@ async function copyContent() {
   background: var(--role-assistant-accent);
 }
 
+.message-item.assistant.thought .message-role::before {
+  background: var(--role-system-accent);
+}
+
 .message-item.user .message-role::before {
   background: var(--role-user-accent);
 }
@@ -128,9 +143,15 @@ async function copyContent() {
   position: relative;
   font-size: 14px;
   color: var(--text-color);
-  padding-right: 40px;
+  padding-right: 30px;
   min-height: 24px;
-  line-height: 1.6;
+  line-height: 1.48;
+  max-width: 56ch;
+}
+
+.message-item.thought .message-content {
+  font-style: italic;
+  color: var(--secondary-text);
 }
 
 .message-actions {
@@ -174,4 +195,21 @@ async function copyContent() {
 .icon-copy::before {
   content: '\1F4CB';
 }
+
+@media (max-width: 768px) {
+  .message-item {
+    min-width: min(86vw, 300px);
+    max-width: min(92vw, 520px);
+    padding: 10px 14px;
+  }
+
+  .message-content {
+    padding-right: 28px;
+    max-width: 46ch;
+  }
+}
 </style>
+
+
+
+

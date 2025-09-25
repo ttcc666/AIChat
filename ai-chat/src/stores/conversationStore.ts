@@ -27,6 +27,29 @@ function createEmptyConversation(provider: string, title = 'New Chat'): Conversa
   }
 }
 
+function normalizeMessagesPayload(messages: unknown): ChatMessage[] {
+  if (!Array.isArray(messages)) {
+    return []
+  }
+  const allowedRoles = new Set<ChatMessage['role']>(['system', 'user', 'assistant'])
+  return messages
+    .filter((item): item is Partial<ChatMessage> => typeof item === 'object' && item !== null)
+    .map((item) => {
+      const candidateRole = typeof item.role === 'string' ? item.role : 'assistant'
+      const role = allowedRoles.has(candidateRole as ChatMessage['role'])
+        ? (candidateRole as ChatMessage['role'])
+        : 'assistant'
+      const content = typeof item.content === 'string' ? item.content : ''
+      const normalized: ChatMessage = {
+        role,
+        content,
+      }
+      if (item.isThought === true) {
+        normalized.isThought = true
+      }
+      return normalized
+    })
+}
 export const useConversationStore = defineStore('conversation', () => {
   const repository: ConversationRepository = new LocalConversationRepository()
 
@@ -176,7 +199,7 @@ export const useConversationStore = defineStore('conversation', () => {
       ...item,
       id: item.id ?? generateId(),
       title: item.title?.trim() || 'Untitled conversation',
-      messages: Array.isArray(item.messages) ? item.messages : [],
+      messages: normalizeMessagesPayload(item.messages),
     }))
     conversations.value = sortConversationsByUpdatedAt(normalized)
     activeConversationId.value = conversations.value[0]?.id ?? null
